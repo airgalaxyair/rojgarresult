@@ -54,26 +54,10 @@ async def states():
         {"id": 12, "name": "Punjab",          "slug": "punjab",         "code": "PB"},
     ]
 
-# Load Telegram route (always works — no DB needed)
+# Telegram route — no DB needed, loads immediately
 try:
     from api.v1.telegram import router as telegram_router
     app.include_router(telegram_router, prefix="/api/v1")
-    logger.info("✅ Telegram router loaded")
+    logger.info("Telegram router loaded")
 except Exception as e:
-    logger.warning(f"⚠️ Telegram router skipped: {e}")
-
-@app.on_event("startup")
-async def load_db_routes():
-    try:
-        from api.v1.posts import router as posts_router
-        app.include_router(posts_router, prefix="/api/v1")
-        logger.info("✅ Posts router loaded")
-    except Exception as e:
-        logger.warning(f"⚠️ Posts router skipped: {e}")
-
-    try:
-        from api.v1.admin.routes import router as admin_router
-        app.include_router(admin_router, prefix="/api/v1")
-        logger.info("✅ Admin router loaded")
-    except Exception as e:
-        logger.warning(f"⚠️ Admin router skipped: {e}")
+    logger.warning(f"Telegram router skipped: {e}")
