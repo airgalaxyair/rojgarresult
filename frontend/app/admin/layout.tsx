@@ -83,7 +83,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           {sidebarOpen && (
             <div style={{ overflow: 'hidden' }}>
               <p style={{ fontSize: 13, fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap' }}>
-                Sarkari School
+                Rojgar School
               </p>
               <p style={{ fontSize: 10, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                 Admin Panel

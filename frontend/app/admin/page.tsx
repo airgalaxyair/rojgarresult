@@ -72,7 +72,7 @@ export default function AdminLoginPage() {
               color: 'var(--text-primary)', marginBottom: 4,
             }}
           >
-            Sarkari School
+            Rojgar School
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-muted)' }}>
             Admin Panel — Authorised Access Only
@@ -88,7 +88,7 @@ export default function AdminLoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@sarkarischool.in"
+              placeholder="admin@rojgarschool.in"
               required
               style={{
                 width: '100%', padding: '10px 12px',
