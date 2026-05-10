@@ -71,7 +71,7 @@ def setup_scheduler() -> AsyncIOScheduler:
 
 async def main():
     logger.info("=" * 50)
-    logger.info("Sarkari School Scraper Scheduler starting...")
+    logger.info("Rojgar School Scraper Scheduler starting...")
     logger.info("=" * 50)
 
     scheduler = setup_scheduler()
