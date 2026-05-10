@@ -150,7 +150,7 @@ async def seed():
         # Default superadmin
         print("Creating default superadmin...")
         db.add(Admin(
-            email="admin@sarkarischool.in",
+            email="admin@rojgarschool.in",
             name="Super Admin",
             hashed_password=hash_password("ChangeThis@2025!"),
             role="superadmin",
