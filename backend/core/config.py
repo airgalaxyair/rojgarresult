@@ -4,14 +4,14 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # App
-    APP_NAME: str = "Sarkari School API"
+    APP_NAME: str = "Rojgar School API"
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = False
     ENVIRONMENT: str = "production"
 
     # Database
-    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost/sarkarischool"
-    DATABASE_SYNC_URL: str = "postgresql://user:password@localhost/sarkarischool"
+    DATABASE_URL: str = "postgresql+asyncpg://user:password@localhost/rojgarschool"
+    DATABASE_SYNC_URL: str = "postgresql://user:password@localhost/rojgarschool"
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
@@ -31,19 +31,19 @@ class Settings(BaseSettings):
     R2_ACCOUNT_ID: str = ""
     R2_ACCESS_KEY_ID: str = ""
     R2_SECRET_ACCESS_KEY: str = ""
-    R2_BUCKET_NAME: str = "sarkarischool-pdfs"
+    R2_BUCKET_NAME: str = "rojgarschool-pdfs"
     R2_PUBLIC_URL: str = ""
 
     # CORS
     ALLOWED_ORIGINS: list[str] = [
-        "https://sarkarischool.in",
-        "https://www.sarkarischool.in",
+        "https://rojgarschool.in",
+        "https://www.rojgarschool.in",
         "http://localhost:3000",
     ]
 
     # Scraper
     SCRAPER_USER_AGENT: str = (
-        "Mozilla/5.0 (compatible; SarkariSchoolBot/1.0; +https://sarkarischool.in/bot)"
+        "Mozilla/5.0 (compatible; RojgarSchoolBot/1.0; +https://rojgarschool.in/bot)"
     )
     SCRAPER_REQUEST_DELAY: float = 2.5  # seconds between requests per domain
     SCRAPER_MAX_RETRIES: int = 3
