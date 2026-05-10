@@ -54,10 +54,17 @@ async def states():
         {"id": 12, "name": "Punjab",          "slug": "punjab",         "code": "PB"},
     ]
 
-# Telegram route — no DB needed, loads immediately
+# Load all routers
 try:
     from api.v1.telegram import router as telegram_router
     app.include_router(telegram_router, prefix="/api/v1")
     logger.info("Telegram router loaded")
 except Exception as e:
     logger.warning(f"Telegram router skipped: {e}")
+
+try:
+    from api.v1.scrapers import router as scrapers_router
+    app.include_router(scrapers_router, prefix="/api/v1")
+    logger.info("Scrapers router loaded")
+except Exception as e:
+    logger.warning(f"Scrapers router skipped: {e}")
