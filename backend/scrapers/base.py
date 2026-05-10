@@ -1,249 +1,268 @@
+"""
+Base scraper — handles fetching, dedup, Supabase insert, Telegram alert.
+All scrapers inherit from this.
+"""
 import hashlib
 import asyncio
 import logging
-from abc import ABC, abstractmethod
+import re
+import os
 from datetime import datetime
 from typing import Optional
 import httpx
 from bs4 import BeautifulSoup
-from core.config import settings
 
 logger = logging.getLogger(__name__)
 
+SUPABASE_URL = os.getenv("SUPABASE_URL", "https://urfzljcwduycxywyzlnt.supabase.co")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVyZnpsamN3ZHV5Y3h5d3l6bG50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzOTgyOTksImV4cCI6MjA5Mzk3NDI5OX0.63njN4bw_MAWQgobNUawXdqZeCr9_Q_egsRPCPCtn7g")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "@rojgarschool")
 
-class ScrapedItem:
-    """Represents a single scraped notification."""
-    def __init__(
-        self,
-        title: str,
-        source_url: str,
-        post_type: str = "job",
-        department_name: str = "",
-        total_vacancies: Optional[int] = None,
-        application_start: Optional[str] = None,
-        application_end: Optional[str] = None,
-        exam_date: Optional[str] = None,
-        description: str = "",
-        pdf_urls: Optional[list] = None,
-        important_dates: Optional[list] = None,
-        eligibility: Optional[list] = None,
-        salary_text: Optional[str] = None,
-        raw_data: Optional[dict] = None,
-    ):
-        self.title = title.strip()
-        self.source_url = source_url
-        self.post_type = post_type
-        self.department_name = department_name
-        self.total_vacancies = total_vacancies
-        self.application_start = application_start
-        self.application_end = application_end
-        self.exam_date = exam_date
-        self.description = description
-        self.pdf_urls = pdf_urls or []
-        self.important_dates = important_dates or []
-        self.eligibility = eligibility or []
-        self.salary_text = salary_text
-        self.raw_data = raw_data or {}
+SB_HEADERS = {
+    "apikey": SUPABASE_KEY,
+    "Authorization": f"Bearer {SUPABASE_KEY}",
+    "Content-Type": "application/json",
+    "Prefer": "return=representation",
+}
 
-    @property
-    def dedup_hash(self) -> str:
-        """Unique hash for deduplication — based on title + end date."""
-        key = f"{self.title.lower().strip()}|{self.application_end or ''}|{self.source_url}"
-        return hashlib.sha256(key.encode()).hexdigest()
+FETCH_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "en-IN,en;q=0.9",
+}
 
-    def to_dict(self) -> dict:
-        return {
-            "title": self.title,
-            "source_url": self.source_url,
-            "post_type": self.post_type,
-            "department_name": self.department_name,
-            "total_vacancies": self.total_vacancies,
-            "application_start": self.application_start,
-            "application_end": self.application_end,
-            "exam_date": self.exam_date,
-            "description": self.description,
-            "pdf_urls": self.pdf_urls,
-            "important_dates": self.important_dates,
-            "eligibility": self.eligibility,
-            "salary_text": self.salary_text,
-        }
+def slugify(text: str) -> str:
+    text = re.sub(r"[^\w\s-]", "", text.lower())
+    text = re.sub(r"[\s_-]+", "-", text)
+    return text.strip("-")[:180]
+
+def classify_post_type(title: str) -> str:
+    t = title.lower()
+    if any(k in t for k in ["result", "final result", "merit list", "marks", "cutoff", "cut-off", "selected candidates"]):
+        return "result"
+    if any(k in t for k in ["admit card", "call letter", "hall ticket", "e-admit", "admit-card"]):
+        return "admit_card"
+    if any(k in t for k in ["answer key", "answer sheet", "provisional answer", "response sheet"]):
+        return "answer_key"
+    if any(k in t for k in ["syllabus", "exam pattern", "curriculum", "scheme of examination"]):
+        return "syllabus"
+    if any(k in t for k in ["admission", "prospectus", "entrance test"]):
+        return "admission"
+    return "job"
+
+def extract_vacancies(text: str) -> Optional[int]:
+    patterns = [
+        r"(\d[\d,]+)\s*(?:posts?|vacancies|seats?|positions?|openings?)",
+        r"(?:posts?|vacancies|openings?)\s*[:\-–]\s*(\d[\d,]+)",
+        r"total\s*(?:posts?|vacancies)\s*[:\-]?\s*(\d[\d,]+)",
+    ]
+    for p in patterns:
+        m = re.search(p, text, re.IGNORECASE)
+        if m:
+            try:
+                return int(m.group(1).replace(",", ""))
+            except ValueError:
+                pass
+    return None
+
+def parse_date(s: str) -> Optional[str]:
+    """Parse various Indian date formats to YYYY-MM-DD"""
+    s = s.strip()
+    formats = [
+        ("%d-%m-%Y", r"\d{2}-\d{2}-\d{4}"),
+        ("%d/%m/%Y", r"\d{2}/\d{2}/\d{4}"),
+        ("%d.%m.%Y", r"\d{2}\.\d{2}\.\d{4}"),
+        ("%d %b %Y", r"\d{1,2} \w{3} \d{4}"),
+        ("%d %B %Y", r"\d{1,2} \w+ \d{4}"),
+        ("%B %d, %Y", r"\w+ \d{1,2}, \d{4}"),
+        ("%Y-%m-%d", r"\d{4}-\d{2}-\d{2}"),
+    ]
+    for fmt, pattern in formats:
+        m = re.search(pattern, s)
+        if m:
+            try:
+                return datetime.strptime(m.group(), fmt).strftime("%Y-%m-%d")
+            except ValueError:
+                continue
+    return None
+
+def extract_last_date(text: str) -> Optional[str]:
+    """Find last date from text"""
+    patterns = [
+        r"last\s*date[:\s]+([^\n,;]+)",
+        r"closing\s*date[:\s]+([^\n,;]+)",
+        r"apply\s*(?:on\s*or\s*)?before[:\s]+([^\n,;]+)",
+        r"(?:last|closing)\s*date\s*(?:to\s*apply|for\s*application)[:\s]+([^\n,;]+)",
+    ]
+    for p in patterns:
+        m = re.search(p, text, re.IGNORECASE)
+        if m:
+            d = parse_date(m.group(1))
+            if d:
+                return d
+    return None
 
 
-class BaseScraper(ABC):
-    """Base class for all source scrapers."""
+class BaseScraper:
+    name: str = "Base"
+    dept_slug: str = ""
+    base_url: str = ""
+    source_site_id: int = 1
+    request_delay: float = 2.0
+    max_retries: int = 3
 
-    source_site_id: int
-    source_name: str
-    base_url: str
-    scrape_urls: list[str] = []
-    request_delay: float = settings.SCRAPER_REQUEST_DELAY
-    max_retries: int = settings.SCRAPER_MAX_RETRIES
-
-    def __init__(self):
-        self.session = None
-        self.logger = logging.getLogger(self.__class__.__name__)
-
-    async def _get_html(self, url: str, attempt: int = 0) -> Optional[str]:
-        """Fetch HTML with retry logic and rate limiting."""
-        headers = {
-            "User-Agent": settings.SCRAPER_USER_AGENT,
-            "Accept": "text/html,application/xhtml+xml",
-            "Accept-Language": "en-IN,en;q=0.9",
-        }
+    async def fetch(self, url: str, attempt: int = 0) -> Optional[str]:
         try:
-            async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
-                response = await client.get(url, headers=headers)
-                response.raise_for_status()
+            async with httpx.AsyncClient(timeout=30, follow_redirects=True, headers=FETCH_HEADERS) as c:
+                r = await c.get(url)
+                r.raise_for_status()
                 await asyncio.sleep(self.request_delay)
-                return response.text
+                return r.text
         except Exception as e:
             if attempt < self.max_retries:
-                wait = 2 ** attempt  # exponential backoff
-                self.logger.warning(f"Retry {attempt + 1} for {url} after {wait}s: {e}")
+                wait = 2 ** attempt
+                logger.warning(f"{self.name}: retry {attempt+1} for {url} after {wait}s — {e}")
                 await asyncio.sleep(wait)
-                return await self._get_html(url, attempt + 1)
-            self.logger.error(f"Failed to fetch {url} after {self.max_retries} retries: {e}")
+                return await self.fetch(url, attempt + 1)
+            logger.error(f"{self.name}: failed {url} — {e}")
             return None
 
-    def _soup(self, html: str) -> BeautifulSoup:
+    def soup(self, html: str) -> BeautifulSoup:
         return BeautifulSoup(html, "html.parser")
 
-    def _page_hash(self, html: str) -> str:
-        return hashlib.sha256(html.encode()).hexdigest()
+    def dedup_hash(self, title: str, source_url: str) -> str:
+        key = f"{title.lower().strip()}|{self.dept_slug}|{source_url}"
+        return hashlib.sha256(key.encode()).hexdigest()
 
-    @abstractmethod
-    async def scrape(self) -> list[ScrapedItem]:
-        """Scrape the source and return list of ScrapedItems."""
-        pass
+    async def scrape(self) -> list[dict]:
+        """Override in each scraper. Return list of post dicts."""
+        return []
+
+    async def get_dept_id(self) -> Optional[int]:
+        async with httpx.AsyncClient(timeout=10) as c:
+            r = await c.get(
+                f"{SUPABASE_URL}/rest/v1/departments?slug=eq.{self.dept_slug}&select=id&limit=1",
+                headers=SB_HEADERS
+            )
+            data = r.json()
+            return data[0]["id"] if data else None
+
+    async def save_to_supabase(self, post: dict) -> Optional[dict]:
+        """Insert post into Supabase. Returns saved post or None if duplicate."""
+        async with httpx.AsyncClient(timeout=15) as c:
+            # Check duplicate
+            check = await c.get(
+                f"{SUPABASE_URL}/rest/v1/scraper_raw_items?raw_hash=eq.{post['_hash']}&select=id&limit=1",
+                headers=SB_HEADERS
+            )
+            if check.json():
+                return None  # Already exists
+
+            # Save hash record
+            await c.post(
+                f"{SUPABASE_URL}/rest/v1/scraper_raw_items",
+                json={
+                    "source_site_id": self.source_site_id,
+                    "raw_hash": post["_hash"],
+                    "raw_data": {"title": post.get("title"), "url": post.get("source_url")},
+                    "status": "processed"
+                },
+                headers=SB_HEADERS
+            )
+
+            # Build Supabase post payload
+            slug = slugify(post["title"]) + "-" + post["_hash"][:5]
+            seo_title = f"{post['title']} — Apply Online, Official Notification"[:80]
+            desc = post.get("description") or f"Official notification from {self.name}. Visit the official website for complete details and application."
+
+            payload = {
+                "slug": slug,
+                "title": post["title"],
+                "post_type": post.get("post_type", "job"),
+                "status": "published",
+                "source_type": "official",
+                "source_url": post.get("source_url"),
+                "department_id": post.get("dept_id"),
+                "category_id": post.get("category_id"),
+                "description": desc,
+                "seo_title": seo_title,
+                "seo_description": desc[:155],
+                "is_featured": False,
+                "is_trending": False,
+                "published_at": datetime.utcnow().isoformat(),
+            }
+
+            if post.get("total_vacancies"):
+                payload["total_vacancies"] = post["total_vacancies"]
+            if post.get("application_end"):
+                payload["application_end"] = post["application_end"] + "T00:00:00"
+            if post.get("application_start"):
+                payload["application_start"] = post["application_start"] + "T00:00:00"
+            if post.get("exam_date"):
+                payload["exam_date"] = post["exam_date"] + "T00:00:00"
+            if post.get("pdf_urls"):
+                payload["pdf_urls"] = post["pdf_urls"]
+            if post.get("important_dates"):
+                payload["important_dates"] = post["important_dates"]
+            if post.get("salary_text"):
+                payload["salary_range"] = {"text": post["salary_text"]}
+
+            r = await c.post(
+                f"{SUPABASE_URL}/rest/v1/posts",
+                json=payload,
+                headers=SB_HEADERS
+            )
+            if r.status_code in (200, 201):
+                return r.json()[0] if r.json() else None
+            else:
+                logger.error(f"{self.name}: Supabase insert failed — {r.text[:200]}")
+                return None
+
+    async def send_telegram(self, post: dict):
+        if not TELEGRAM_BOT_TOKEN:
+            return
+        emoji = {"job":"💼","result":"📊","admit_card":"🎫","answer_key":"🔑","syllabus":"📚","admission":"🎓"}.get(post.get("post_type","job"),"🔔")
+        slug = slugify(post["title"]) + "-" + post["_hash"][:5]
+        caption = f"{emoji} *{post['title']}*\n\n"
+        if post.get("total_vacancies"):
+            caption += f"📋 *Posts:* {post['total_vacancies']:,}\n"
+        if post.get("application_end"):
+            caption += f"⏰ *Last Date:* {post['application_end']}\n"
+        caption += f"\n🌐 [Full Details](https://rojgarresult.vercel.app/jobs/{slug})"
+        if post.get("source_url"):
+            caption += f"\n📎 [Official Site]({post['source_url']})"
+        caption += f"\n\n#RojgarSchool #GovtJobs #{self.name.replace(' ','')}"
+
+        try:
+            async with httpx.AsyncClient(timeout=15) as c:
+                await c.post(
+                    f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+                    json={"chat_id": TELEGRAM_CHANNEL_ID, "text": caption, "parse_mode": "Markdown"}
+                )
+        except Exception as e:
+            logger.warning(f"Telegram send failed: {e}")
 
     async def run(self) -> dict:
-        """Run the full scrape cycle. Returns stats."""
-        stats = {
-            "source": self.source_name,
-            "started_at": datetime.utcnow().isoformat(),
-            "found": 0,
-            "new": 0,
-            "errors": [],
-        }
+        stats = {"scraper": self.name, "found": 0, "new": 0, "errors": []}
+        logger.info(f"Starting scraper: {self.name}")
         try:
+            dept_id = await self.get_dept_id()
             items = await self.scrape()
             stats["found"] = len(items)
-            await self._process_items(items, stats)
-        except Exception as e:
-            self.logger.error(f"Scraper {self.source_name} failed: {e}")
-            stats["errors"].append(str(e))
-        stats["completed_at"] = datetime.utcnow().isoformat()
-        return stats
-
-    async def _process_items(self, items: list[ScrapedItem], stats: dict):
-        """Check for duplicates and store new items."""
-        from db.database import AsyncSessionLocal
-        from sqlalchemy import select
-        from models.models import ScraperRawItem, Post
-
-        async with AsyncSessionLocal() as db:
             for item in items:
+                item["dept_id"] = dept_id
+                item["_hash"] = self.dedup_hash(item["title"], item.get("source_url", ""))
                 try:
-                    # Check if already exists
-                    existing = (
-                        await db.execute(
-                            select(ScraperRawItem).where(ScraperRawItem.raw_hash == item.dedup_hash)
-                        )
-                    ).scalar_one_or_none()
-
-                    if existing:
-                        continue  # Already processed
-
-                    # Store raw item
-                    raw = ScraperRawItem(
-                        source_site_id=self.source_site_id,
-                        raw_hash=item.dedup_hash,
-                        raw_data=item.raw_data,
-                        extracted_data=item.to_dict(),
-                        status="pending",
-                    )
-                    db.add(raw)
-                    await db.flush()
-
-                    # Auto-create post draft (official sources only)
-                    await self._create_post_draft(db, item)
-                    stats["new"] += 1
-
+                    saved = await self.save_to_supabase(item)
+                    if saved:
+                        stats["new"] += 1
+                        await self.send_telegram(item)
+                        await asyncio.sleep(1)  # Rate limit Telegram
                 except Exception as e:
-                    stats["errors"].append(f"{item.title}: {e}")
-
-            await db.commit()
-
-    async def _create_post_draft(self, db, item: ScrapedItem):
-        """Convert scraped item to a Post draft ready for publishing."""
-        import re
-        from models.models import Post, PostType, PostStatus, SourceType, Department
-
-        # Find or create department
-        dept = (
-            await db.execute(
-                __import__("sqlalchemy", fromlist=["select"]).select(Department)
-                .where(Department.name == item.department_name)
-            )
-        ).scalar_one_or_none()
-
-        slug_base = re.sub(r"[^\w\s-]", "", item.title.lower())
-        slug_base = re.sub(r"[\s_-]+", "-", slug_base).strip("-")[:200]
-
-        # Auto-generate SEO title
-        seo_title = f"{item.title} — Apply Online, Notification PDF"
-        if len(seo_title) > 80:
-            seo_title = item.title[:77] + "..."
-
-        # Auto-generate SEO description
-        seo_desc = f"{item.title}. "
-        if item.total_vacancies:
-            seo_desc += f"Total {item.total_vacancies} vacancies. "
-        if item.application_end:
-            seo_desc += f"Last date: {item.application_end}. "
-        seo_desc += "Official notification and PDF download."
-        seo_desc = seo_desc[:155]
-
-        post = Post(
-            slug=slug_base,
-            title=item.title,
-            post_type=item.post_type,
-            status=PostStatus.published,  # official source → auto-publish
-            source_type=SourceType.official,
-            source_url=item.source_url,
-            source_site_id=self.source_site_id,
-            department_id=dept.id if dept else None,
-            total_vacancies=item.total_vacancies,
-            description=item.description,
-            important_dates=item.important_dates,
-            eligibility=item.eligibility,
-            salary_range={"text": item.salary_text} if item.salary_text else None,
-            pdf_urls=item.pdf_urls,
-            seo_title=seo_title,
-            seo_description=seo_desc,
-            published_at=datetime.utcnow(),
-        )
-
-        # Parse dates
-        if item.application_start:
-            post.application_start = _parse_date(item.application_start)
-        if item.application_end:
-            post.application_end = _parse_date(item.application_end)
-        if item.exam_date:
-            post.exam_date = _parse_date(item.exam_date)
-
-        db.add(post)
-
-
-def _parse_date(date_str: str) -> Optional[datetime]:
-    """Try parsing common Indian date formats."""
-    formats = [
-        "%d-%m-%Y", "%d/%m/%Y", "%d %b %Y", "%d %B %Y",
-        "%Y-%m-%d", "%d.%m.%Y",
-    ]
-    for fmt in formats:
-        try:
-            return datetime.strptime(date_str.strip(), fmt)
-        except ValueError:
-            continue
-    return None
+                    stats["errors"].append(str(e))
+        except Exception as e:
+            logger.error(f"{self.name} crashed: {e}")
+            stats["errors"].append(str(e))
+        logger.info(f"{self.name}: found={stats['found']}, new={stats['new']}")
+        return stats
