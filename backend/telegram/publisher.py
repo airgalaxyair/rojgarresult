@@ -12,7 +12,7 @@ POST_EMOJIS = {
     PostType.admission: "🎓",
 }
 
-BASE_URL = "https://sarkarischool.in"
+BASE_URL = "https://rojgarschool.in"
 
 
 def _post_url(post: Post) -> str:
@@ -65,7 +65,7 @@ def _format_caption(post: Post) -> str:
 
 
 def _build_hashtags(post: Post) -> str:
-    tags = ["#SarkariSchool", "#GovtJobs", "#SarkariNaukri"]
+    tags = ["#RojgarSchool", "#GovtJobs", "#GovtJobsIndia"]
 
     if post.department:
         dept_tag = "#" + post.department.name.replace(" ", "").replace("-", "")
