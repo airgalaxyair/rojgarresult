@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const state = STATES.find((s) => s.slug === slug);
   if (!state) return { title: 'State Not Found' };
   return {
-    title: `${state.name} Government Jobs 2025 — State & Central Sarkari Naukri`,
+    title: `${state.name} Government Jobs 2025 — State & Central Rojgar Naukri`,
     description: `Latest government job notifications 2025 in ${state.name}. State PSC, police, teaching, health and central government jobs for ${state.name} residents.`,
   };
 }
