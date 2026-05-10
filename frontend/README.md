@@ -1,6 +1,6 @@
-# Sarkari School — Frontend
+# Rojgar School — Frontend
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/sarkarischool&project-name=sarkarischool&root-directory=frontend&env=NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_API_URL&envDescription=Supabase%20and%20API%20configuration&envLink=https://github.com/YOUR_USERNAME/sarkarischool/blob/main/.env.example)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/YOUR_USERNAME/rojgarschool&project-name=rojgarschool&root-directory=frontend&env=NEXT_PUBLIC_SUPABASE_URL,NEXT_PUBLIC_SUPABASE_ANON_KEY,NEXT_PUBLIC_API_URL&envDescription=Supabase%20and%20API%20configuration&envLink=https://github.com/YOUR_USERNAME/rojgarschool/blob/main/.env.example)
 
 ## Quick Deploy
 
@@ -9,7 +9,7 @@
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://urfzljcwduycxywyzlnt.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | (from Supabase dashboard) |
-| `NEXT_PUBLIC_API_URL` | `https://api.sarkarischool.in` |
+| `NEXT_PUBLIC_API_URL` | `https://api.rojgarschool.in` |
 
 ### Manual Deploy
 ```bash

@@ -1,4 +1,4 @@
-# Sarkari School — Mobile Deployment Guide
+# Rojgar School — Mobile Deployment Guide
 ## Deploy from Your Phone in 15 Minutes
 
 ---
@@ -24,7 +24,7 @@
 ## Step 2 — Create New Repository (1 min)
 1. On GitHub, tap the **+** icon (top right)
 2. Tap **New repository**
-3. Name it: `sarkarischool`
+3. Name it: `rojgarschool`
 4. Set to **Public**
 5. Tap **Create repository**
 
@@ -32,7 +32,7 @@
 
 ## Step 3 — Upload the Code (3 min)
 1. On the empty repo page, tap **uploading an existing file**
-2. Download the zip I provided: `sarkarischool-github.zip`
+2. Download the zip I provided: `rojgarschool-github.zip`
 3. **Unzip it** on your phone (use Files app on iPhone or any file manager on Android)
 4. Tap **choose your files** on GitHub
 5. Select ALL files from the unzipped folder
@@ -46,7 +46,7 @@
 2. Tap **Sign Up** → **Continue with GitHub**
 3. Authorize Vercel to access GitHub
 4. Tap **Add New Project**
-5. Find `sarkarischool` in the list → tap **Import**
+5. Find `rojgarschool` in the list → tap **Import**
 6. Vercel auto-detects Next.js ✅
 
 ---
@@ -58,7 +58,7 @@ Before deploying, add these 3 variables:
 |------|-------|
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://urfzljcwduycxywyzlnt.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVyZnpsamN3ZHV5Y3h5d3l6bG50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzOTgyOTksImV4cCI6MjA5Mzk3NDI5OX0.63njN4bw_MAWQgobNUawXdqZeCr9_Q_egsRPCPCtn7g` |
-| `NEXT_PUBLIC_API_URL` | `https://api.sarkarischool.in` |
+| `NEXT_PUBLIC_API_URL` | `https://api.rojgarschool.in` |
 
 How to add:
 1. On the Vercel project setup page, scroll to **Environment Variables**
@@ -91,7 +91,7 @@ So future changes deploy automatically:
 | `VERCEL_PROJECT_ID` | (get from Vercel → Project → Settings → General) |
 | `NEXT_PUBLIC_SUPABASE_URL` | `https://urfzljcwduycxywyzlnt.supabase.co` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVyZnpsamN3ZHV5Y3h5d3l6bG50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzOTgyOTksImV4cCI6MjA5Mzk3NDI5OX0.63njN4bw_MAWQgobNUawXdqZeCr9_Q_egsRPCPCtn7g` |
-| `NEXT_PUBLIC_API_URL` | `https://api.sarkarischool.in` |
+| `NEXT_PUBLIC_API_URL` | `https://api.rojgarschool.in` |
 
 Now every time you push code to GitHub → site auto-updates ✅
 
@@ -99,7 +99,7 @@ Now every time you push code to GitHub → site auto-updates ✅
 
 ## Step 8 — Add Your Domain (Optional, 2 min)
 1. Vercel → Project → **Settings** → **Domains**
-2. Type `sarkarischool.in` → **Add**
+2. Type `rojgarschool.in` → **Add**
 3. Vercel shows you DNS records
 4. Go to your domain registrar → add those records
 5. Done — site is live on your domain ✅
@@ -111,8 +111,8 @@ Once deployed, go to:
 `https://your-vercel-url.vercel.app/admin`
 
 Login:
-- Email: `admin@sarkarischool.in`
-- Password: `SarkariSchool@2025!`
+- Email: `admin@rojgarschool.in`
+- Password: `RojgarSchool@2025!`
 - **Change this immediately after first login**
 
 ---
