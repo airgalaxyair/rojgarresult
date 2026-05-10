@@ -104,3 +104,31 @@ if __name__ == "__main__":
         asyncio.run(run_all())
     else:
         asyncio.run(run_one(mode))
+
+# Third-party scrapers (pending_approval)
+THIRD_PARTY_SCRAPERS = [
+    ("scrapers.sources.third_party.SarkariResultScraper",   3),
+    ("scrapers.sources.third_party.FreeJobAlertScraper",    3),
+    ("scrapers.sources.third_party.IndGovtJobsScraper",     4),
+    ("scrapers.sources.third_party.SarkariJobNetScraper",   4),
+    ("scrapers.sources.third_party.LinkingSkyScraper",      6),
+    ("scrapers.sources.third_party.MySarkariNaukriScraper", 6),
+    ("scrapers.sources.third_party.SarkariJobFindScraper",  6),
+    ("scrapers.sources.third_party.SarkariRojgarScraper",   6),
+    ("scrapers.sources.third_party.GovtJobsPortalScraper",  8),
+    ("scrapers.sources.third_party.Adda247Scraper",         8),
+    ("scrapers.sources.third_party.EmploymentNewsScraper",  4),  # Official
+]
+
+ALL_SCRAPERS = SCRAPERS + THIRD_PARTY_SCRAPERS
+
+
+async def run_third_party():
+    """Run only third-party scrapers."""
+    logger.info(f"Running {len(THIRD_PARTY_SCRAPERS)} third-party scrapers...")
+    results = []
+    for class_path, _ in THIRD_PARTY_SCRAPERS:
+        result = await run_one(class_path)
+        results.append(result)
+        await asyncio.sleep(3)
+    return results
