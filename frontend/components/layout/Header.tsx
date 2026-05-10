@@ -95,7 +95,7 @@ export default function Header() {
               </div>
               <div>
                 <div style={{ fontFamily: 'Crimson Pro, serif', fontSize: 20, fontWeight: 700, color: 'var(--text-primary)', lineHeight: 1 }}>
-                  Sarkari School
+                  Rojgar School
                 </div>
                 <div style={{ fontSize: 10, color: 'var(--text-muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                   Official Govt Jobs

@@ -87,7 +87,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <div style={{ fontFamily: 'Crimson Pro, serif', fontSize: 24, fontWeight: 700, color: 'white', marginBottom: 10 }}>
-              Sarkari School
+              Rojgar School
             </div>
             <p style={{ fontSize: 13, lineHeight: 1.7, color: '#a69d90', marginBottom: 16 }}>
               India's most trusted automated government jobs platform. All content sourced directly from official government websites.
@@ -131,7 +131,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div style={{ borderTop: '1px solid #3d3530', marginTop: 40, paddingTop: 20, display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: 12 }}>
           <p style={{ fontSize: 12, color: '#726860' }}>
-            © {new Date().getFullYear()} Sarkari School. All content sourced from official government websites.
+            © {new Date().getFullYear()} Rojgar School. All content sourced from official government websites.
           </p>
           <div style={{ display: 'flex', gap: 20 }}>
             {['About', 'Privacy Policy', 'Disclaimer', 'Contact'].map((item) => (
