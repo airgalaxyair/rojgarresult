@@ -120,3 +120,19 @@ async def _run_critical():
 async def _run_single(class_path: str):
     from scheduler.scheduler import run_one
     await run_one(class_path)
+
+
+@router.post("/run/third-party")
+async def run_third_party_scrapers(
+    background_tasks: BackgroundTasks,
+    x_scraper_secret: Optional[str] = Header(None)
+):
+    """Run all third-party scrapers — saves as pending_approval."""
+    verify_secret(x_scraper_secret)
+    background_tasks.add_task(_run_third_party)
+    return {"message": "Third-party scrapers started — posts will need admin approval", "count": 11}
+
+
+async def _run_third_party():
+    from scheduler.scheduler import run_third_party
+    await run_third_party()
