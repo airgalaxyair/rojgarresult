@@ -120,7 +120,7 @@ export default function AdminTelegramPage() {
           <textarea
             value={customMsg}
             onChange={(e) => setCustomMsg(e.target.value)}
-            placeholder={`*Breaking:* UPSC CSE 2025 notification released\\n\\n📋 1056 vacancies\\n⏰ Last date: 04 Mar 2025\\n\\n[Apply Online](https://upsc.gov.in)\\n\\n#UPSC #GovtJobs #SarkariSchool`}
+            placeholder={`*Breaking:* UPSC CSE 2025 notification released\\n\\n📋 1056 vacancies\\n⏰ Last date: 04 Mar 2025\\n\\n[Apply Online](https://upsc.gov.in)\\n\\n#UPSC #GovtJobs #RojgarSchool`}
             rows={10}
             style={{
               width: '100%', padding: '12px', borderRadius: 9,
