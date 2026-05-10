@@ -5,16 +5,16 @@ import Footer from '@/components/layout/Footer';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Sarkari School — Government Jobs, Results, Admit Cards 2025',
-    template: '%s | Sarkari School',
+    default: 'Rojgar School — Government Jobs, Results, Admit Cards 2025',
+    template: '%s | Rojgar School',
   },
-  description: 'Sarkari School: Latest government job notifications, exam results, admit cards, answer keys from official sources. UPSC, SSC, RRB, IBPS, SBI and more.',
-  keywords: ['sarkari naukri', 'government jobs', 'sarkari result', 'UPSC', 'SSC CGL', 'IBPS', 'RRB NTPC'],
-  metadataBase: new URL('https://sarkarischool.in'),
+  description: 'Rojgar School: Latest government job notifications, exam results, admit cards, answer keys from official sources. UPSC, SSC, RRB, IBPS, SBI and more.',
+  keywords: ['rojgar naukri', 'government jobs', 'rojgar result', 'UPSC', 'SSC CGL', 'IBPS', 'RRB NTPC'],
+  metadataBase: new URL('https://rojgarschool.in'),
   openGraph: {
     type: 'website',
     locale: 'en_IN',
-    siteName: 'Sarkari School',
+    siteName: 'Rojgar School',
   },
   robots: { index: true, follow: true },
 };
