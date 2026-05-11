@@ -104,7 +104,7 @@ export default async function JobDetailPage({ params }: Props) {
   // Build related links from Supabase
   const SUPABASE_URL = 'https://urfzljcwduycxywyzlnt.supabase.co/rest/v1';
   const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVyZnpsamN3ZHV5Y3h5d3l6bG50Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzOTgyOTksImV4cCI6MjA5Mzk3NDI5OX0.63njN4bw_MAWQgobNUawXdqZeCr9_Q_egsRPCPCtn7g';
-  const SEL = 'id,slug,title,post_type,status,total_vacancies,application_end,published_at,departments(id,name,slug,official_site),categories(id,name,slug,color)';
+  const SEL = 'id,slug,title,post_type,status,source_type,total_vacancies,application_end,published_at,notice_image_url,pdf_urls,departments(id,name,slug,official_site),categories(id,name,slug,color)';
   let related: any[] = [];
   try {
     const filters = [];
@@ -204,9 +204,15 @@ export default async function JobDetailPage({ params }: Props) {
                   </a>
                 )}
                 {post.pdf_urls?.[0] && (
-                  <a href={post.pdf_urls[0]} target="_blank" rel="noopener noreferrer"
-                    style={{ display:'inline-flex', alignItems:'center', gap:8, background:'white', color:'var(--text-secondary)', padding:'10px 16px', borderRadius:9, fontSize:13, fontWeight:500, textDecoration:'none', border:'1px solid var(--border)' }}>
-                    <FileDown size={13} /> Download PDF
+                  <a href={post.pdf_urls[1] || post.pdf_urls[0]} target="_blank" rel="noopener noreferrer"
+                    style={{ display:'inline-flex', alignItems:'center', gap:8, background:'#dc2626', color:'white', padding:'10px 16px', borderRadius:9, fontSize:13, fontWeight:700, textDecoration:'none' }}>
+                    <FileDown size={13} /> Download Notification PDF
+                  </a>
+                )}
+                {post.notice_image_url && (
+                  <a href={post.notice_image_url} target="_blank" rel="noopener noreferrer"
+                    style={{ display:'inline-flex', alignItems:'center', gap:8, background:'#7c3aed', color:'white', padding:'10px 16px', borderRadius:9, fontSize:13, fontWeight:700, textDecoration:'none' }}>
+                    <FileDown size={13} /> View Short Notice
                   </a>
                 )}
               </div>
@@ -336,9 +342,10 @@ export default async function JobDetailPage({ params }: Props) {
               <table style={{ width:'100%', borderCollapse:'collapse' }}>
                 <tbody>
                   {[
-                    officialSite && { label: 'Apply Online', href: officialSite, text: 'Click Here', highlight: true },
-                    post.pdf_urls?.[0] && { label: 'Download Notification PDF', href: post.pdf_urls[0], text: 'Click Here', highlight: false },
-                    officialSite && { label: 'Official Website', href: officialSite, text: deptName ? `${deptName} Official Website` : 'Official Website', highlight: false },
+                    officialSite && !expired && { label: 'Apply Online', href: officialSite, text: 'Click Here ✓', highlight: true },
+                    post.pdf_urls?.[0] && { label: 'Download Notification PDF', href: post.pdf_urls[1] || post.pdf_urls[0], text: 'Click Here', highlight: false },
+                    post.notice_image_url && { label: 'Short Notice / Image', href: post.notice_image_url, text: 'View Notice', highlight: false },
+                    officialSite && { label: 'Official Website', href: officialSite, text: (deptName && deptName !== 'Unknown') ? `${deptName} Official Website` : 'Official Website', highlight: false },
                   ].filter(Boolean).map((link: any, i: number) => (
                     <tr key={i} style={{ borderBottom:'1px solid var(--border)' }}>
                       <td style={{ padding:'10px 20px', fontSize:14, fontWeight:600, color:'var(--accent)', width:'50%', textAlign:'center', borderRight:'1px solid var(--border)' }}>
