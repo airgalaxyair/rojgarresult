@@ -146,7 +146,7 @@ export default async function JobDetailPage({ params }: Props) {
                   <span style={{ padding:'3px 10px', borderRadius:999, fontSize:11, fontWeight:700, background:'var(--accent)', color:'white' }}>
                     {TYPE_EMOJI[post.post_type]} {TYPE_LABEL[post.post_type] || 'Notification'}
                   </span>
-                  {deptName && (
+                  {deptName && deptName !== 'Unknown' && (
                     <span style={{ padding:'3px 10px', borderRadius:999, fontSize:11, fontWeight:600, background:'var(--bg-subtle)', color:'var(--text-secondary)', border:'1px solid var(--border)' }}>
                       {deptName}
                     </span>
@@ -169,7 +169,7 @@ export default async function JobDetailPage({ params }: Props) {
 
                 <p style={{ fontSize:12, color:'var(--text-muted)' }}>
                   Updated {timeAgo(post.updated_at || post.published_at)}
-                  {officialSite && <> · Source: <a href={officialSite} target="_blank" rel="noopener noreferrer" style={{ color:'var(--accent)' }}>{deptName || 'Official Website'}</a></>}
+                  {officialSite && <> · <a href={officialSite} target="_blank" rel="noopener noreferrer" style={{ color:'var(--accent)' }}>{(deptName && deptName !== 'Unknown') ? `${deptName} Official Website` : 'Official Website'}</a></>}
                 </p>
               </div>
 
@@ -217,7 +217,7 @@ export default async function JobDetailPage({ params }: Props) {
               <div className="card" style={{ marginBottom:16, overflow:'hidden' }}>
                 <div style={{ padding:'12px 20px', background:'var(--bg-subtle)', borderBottom:'1px solid var(--border)' }}>
                   <h2 style={{ fontFamily:'Crimson Pro, serif', fontSize:17, fontWeight:700, color:'var(--text-primary)' }}>
-                    {deptName ? `${deptName} — ` : ''}Short Information
+                    {deptName && deptName !== 'Unknown' ? `${deptName} — ` : ''}Short Information
                   </h2>
                 </div>
                 <div style={{ padding:'16px 20px' }}>
@@ -391,7 +391,7 @@ export default async function JobDetailPage({ params }: Props) {
               </div>
               <div style={{ padding:'4px 0' }}>
                 {[
-                  deptName && { label: 'Department', value: deptName },
+                  deptName && deptName !== 'Unknown' && { label: 'Department', value: deptName },
                   post.category?.name && { label: 'Category', value: post.category.name },
                   post.total_vacancies && { label: 'Total Posts', value: `${formatVacancies(post.total_vacancies)}`, bold: true },
                   post.application_start && { label: 'Apply From', value: formatDate(post.application_start) },
