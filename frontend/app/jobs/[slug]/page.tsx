@@ -209,6 +209,12 @@ export default async function JobDetailPage({ params }: Props) {
                     <FileDown size={13} /> Download Notification PDF
                   </a>
                 )}
+                {!post.pdf_urls?.[0] && officialSite && (
+                  <a href={officialSite} target="_blank" rel="noopener noreferrer nofollow"
+                    style={{ display:'inline-flex', alignItems:'center', gap:8, background:'#dc2626', color:'white', padding:'10px 16px', borderRadius:9, fontSize:13, fontWeight:700, textDecoration:'none' }}>
+                    <FileDown size={13} /> Download Notification
+                  </a>
+                )}
                 {post.notice_image_url && (
                   <a href={post.notice_image_url} target="_blank" rel="noopener noreferrer"
                     style={{ display:'inline-flex', alignItems:'center', gap:8, background:'#7c3aed', color:'white', padding:'10px 16px', borderRadius:9, fontSize:13, fontWeight:700, textDecoration:'none' }}>
@@ -343,7 +349,7 @@ export default async function JobDetailPage({ params }: Props) {
                 <tbody>
                   {[
                     officialSite && !expired && { label: 'Apply Online', href: officialSite, text: 'Click Here ✓', highlight: true },
-                    post.pdf_urls?.[0] && { label: 'Download Notification PDF', href: post.pdf_urls[1] || post.pdf_urls[0], text: 'Click Here', highlight: false },
+                    (post.pdf_urls?.[0] || officialSite) && { label: 'Download Notification PDF', href: post.pdf_urls?.[1] || post.pdf_urls?.[0] || officialSite, text: 'Click Here', highlight: false },
                     post.notice_image_url && { label: 'Short Notice / Image', href: post.notice_image_url, text: 'View Notice', highlight: false },
                     officialSite && { label: 'Official Website', href: officialSite, text: (deptName && deptName !== 'Unknown') ? `${deptName} Official Website` : 'Official Website', highlight: false },
                   ].filter(Boolean).map((link: any, i: number) => (
