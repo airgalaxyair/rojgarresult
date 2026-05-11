@@ -163,6 +163,11 @@ export default function AdminPostsPage() {
                           <Eye size={11} />
                         </Link>
                       )}
+                      {/* EDIT button — always visible */}
+                      <Link href={`/admin/posts/${post.id}`} title="Edit post"
+                        style={{ width: 28, height: 28, borderRadius: 6, border: '1px solid #bfdbfe', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2563eb', textDecoration: 'none' }}>
+                        <Edit3 size={11} />
+                      </Link>
                       {post.status === 'pending_approval' && (
                         <>
                           <button onClick={() => approve(post)} disabled={actionId === post.id} title="Approve + send Telegram"
