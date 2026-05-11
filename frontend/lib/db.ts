@@ -5,7 +5,7 @@ const KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZi
 
 const H = { apikey: KEY, Authorization: `Bearer ${KEY}` };
 
-const SELECT_POST = 'id,slug,title,post_type,status,total_vacancies,application_start,application_end,exam_date,is_featured,is_trending,is_pinned,view_count,published_at,updated_at,description,important_dates,eligibility,salary_range,pdf_urls,source_url,seo_title,seo_description,departments(id,name,slug,official_site),categories(id,name,slug,color)';
+const SELECT_POST = 'id,slug,title,post_type,status,source_type,total_vacancies,application_start,application_end,exam_date,is_featured,is_trending,is_pinned,view_count,published_at,updated_at,description,important_dates,eligibility,salary_range,pdf_urls,notice_image_url,source_url,seo_title,seo_description,departments(id,name,slug,official_site),categories(id,name,slug,color)';
 
 async function get(path: string, revalidate = 300) {
   try {
