@@ -10,6 +10,7 @@ import { formatDate, timeAgo, isExpired, daysLeft, formatVacancies } from '@/lib
 import { POST_TYPE_LABELS, POST_TYPE_BADGE } from '@/lib/types';
 
 export const revalidate = 300;
+export const dynamicParams = true; // Allow new slugs not in generateStaticParams
 
 interface Props { params: Promise<{ slug: string }>; }
 
