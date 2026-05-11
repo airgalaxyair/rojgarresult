@@ -154,10 +154,11 @@ export default async function JobDetailPage({ params }: Props) {
                 </div>
               )}
 
-              {/* Actions */}
+              {/* Actions — always use official department website, never third-party URL */}
               <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
-                {post.source_url && (
-                  <a href={post.source_url} target="_blank" rel="noopener noreferrer nofollow"
+                {/* Official website — prefer dept official_site, fallback to source_url if official source */}
+                {(post.department?.official_site || (post.source_type === 'official' && post.source_url)) && (
+                  <a href={post.department?.official_site || post.source_url} target="_blank" rel="noopener noreferrer nofollow"
                     style={{ display:'inline-flex', alignItems:'center', gap:8, background:'var(--accent)', color:'white', padding:'10px 18px', borderRadius:9, fontSize:14, fontWeight:600, textDecoration:'none' }}>
                     <ExternalLink size={14} /> Apply Online
                   </a>
@@ -172,7 +173,7 @@ export default async function JobDetailPage({ params }: Props) {
 
               <p style={{ fontSize:12, color:'var(--text-muted)', marginTop:12 }}>
                 Updated {timeAgo(post.updated_at || post.published_at)}
-                {post.source_url && <> · <a href={post.source_url} target="_blank" rel="noopener noreferrer" style={{ color:'var(--accent)', textDecoration:'none' }}>Official Source</a></>}
+                {post.department?.official_site && <> · <a href={post.department.official_site} target="_blank" rel="noopener noreferrer" style={{ color:'var(--accent)', textDecoration:'none' }}>Official Website</a></>}
               </p>
             </div>
 
@@ -216,7 +217,7 @@ export default async function JobDetailPage({ params }: Props) {
                   <CheckCircle size={14} style={{ color:'#16a34a', marginTop:2, flexShrink:0 }} />
                   <p style={{ fontSize:13, color:'#166534' }}>
                     Sourced from the official {post.department?.name || 'government'} website.
-                    {post.source_url && <> Always verify at the <a href={post.source_url} target="_blank" rel="noopener noreferrer nofollow" style={{ color:'#16a34a', fontWeight:600 }}>official source</a>.</>}
+                    {(post.department?.official_site || post.source_url) && <> Always verify at the <a href={post.department?.official_site || post.source_url} target="_blank" rel="noopener noreferrer nofollow" style={{ color:'#16a34a', fontWeight:600 }}>official {post.department?.name || 'department'} website</a>.</>}
                   </p>
                 </div>
               </Section>
