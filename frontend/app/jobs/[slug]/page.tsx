@@ -4,8 +4,8 @@ import { Calendar, Users, Clock, ExternalLink, FileDown, Bell, CheckCircle, Aler
 import { getPostBySlug, getAllPublishedSlugs, normalizeAll, normalize } from '@/lib/db';
 import { formatDate, timeAgo, isExpired, daysLeft, formatVacancies } from '@/lib/utils';
 
-export const revalidate = 300;
-export const dynamicParams = true;
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface Props { params: Promise<{ slug: string }>; }
 
@@ -19,11 +19,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     description: post.seo_description || post.description?.slice(0, 155) || post.title,
     openGraph: { title: post.title, description: post.description?.slice(0, 155) || '' },
   };
-}
-
-export async function generateStaticParams() {
-  const slugs = await getAllPublishedSlugs();
-  return slugs.map((p: any) => ({ slug: p.slug }));
 }
 
 // Detect department from title for third-party posts
